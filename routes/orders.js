@@ -273,7 +273,7 @@ router.put('/:id/status', Utils.authenticateToken, (req, res) => {
 
 router.get('/reviews/:productId', Utils.authenticateToken, (req, res) => {
     Order.find({
-            "item.product": req.params.productId
+            "items.product": req.params.productId
         })
         .populate("user")
         .populate("items.product")
