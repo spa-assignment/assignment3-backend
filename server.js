@@ -65,5 +65,7 @@ app.use('/orders', ordersRoute)
 const productsRoute = require('./routes/products')
 app.use('/products', productsRoute)
 
+app.get('/', (req, res) => res.json({ 'info': 'Backend API for dog care client' }))
+
 // Run app (listen on port)
 app.listen(port, () => console.log('Running app on port ' + port))
