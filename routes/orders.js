@@ -81,7 +81,7 @@ router.get('/:id', Utils.authenticateToken, (req, res) => {
 
 router.get('/user/:id', Utils.authenticateToken, (req, res) => {
     if (req.user._id.toString() !== req.params.id) {
-    console.log('1')
+        console.log('1')
         return res.status(401).json({
             error: {
                 type: 'authentication',
@@ -139,21 +139,21 @@ router.post('/', Utils.authenticateToken, (req, res) => {
     newOrder.save()
         .then(order => {
             User.findOneAndUpdate({
-                _id: req.body.user
-            }, {
-                $set: {
-                    "cart": []
-                }
-            })
-            .catch(err => {
-                console.log(err)
-                res.status(500).json({
-                    error: {
-                        type: 'internal',
-                        message: 'Problem getting updating cart'
+                    _id: req.body.user
+                }, {
+                    $set: {
+                        "cart": []
                     }
                 })
-            })
+                .catch(err => {
+                    console.log(err)
+                    res.status(500).json({
+                        error: {
+                            type: 'internal',
+                            message: 'Problem getting updating cart'
+                        }
+                    })
+                })
 
             return res.status(201).json(order)
         })
@@ -273,25 +273,30 @@ router.put('/:id/status', Utils.authenticateToken, (req, res) => {
 
 router.get('/reviews/:productId', Utils.authenticateToken, (req, res) => {
     Order.find({
-        "item.product": req.params.productId 
+            "item.product": req.params.productId
         })
         .populate("user")
         .populate("items.product")
         .then(orders => {
-            res.json(orders.map(order => order.items.map(item => {
-                const review = {
-                    image: item.review.image,
-                    title: item.review.title,
-                    comment: item.review.comment,
-                    stars: item.review.stars,
-                    user: {
-                        firstName: order.user.firstName,
-                        lastName: order.user.lastName
+            res.json(orders.map(order => order.items
+                .filter(item => item.review)
+                .map(item => {
+                    let review = null
+                    if (item.review) {
+                        review = {
+                            image: item.review.image,
+                            title: item.review.title,
+                            comment: item.review.comment,
+                            stars: item.review.stars,
+                            user: {
+                                firstName: order.user.firstName,
+                                lastName: order.user.lastName
+                            }
+                        }
                     }
-                }
 
-                return review
-            })).flat(1))
+                    return review
+                })).flat(1))
         })
         .catch(err => {
             console.log('Error getting reviews', err)
@@ -373,6 +378,6 @@ router.delete('/:id/products/:productId/review', Utils.authenticateToken, (req, 
         })
 })
 
-    
+
 // Export the router so as it can be imported (in server.js file)
 module.exports = router
